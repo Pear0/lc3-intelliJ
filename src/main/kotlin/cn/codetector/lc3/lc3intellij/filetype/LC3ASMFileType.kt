@@ -10,7 +10,7 @@ object LC3ASMFileType : LanguageFileType(LC3Language.INSTANCE) {
     }
 
     override fun getName(): String {
-        return "LC3 Assembly File"
+        return "LC3ASM"
     }
 
     override fun getDefaultExtension(): String {

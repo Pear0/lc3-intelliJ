@@ -2,14 +2,9 @@ package cn.codetector.lc3.lc3intellij.lang;
 
 import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.TokenType;
+import cn.codetector.lc3.lc3intellij.psi.LC3Types;
 %%
-
-%{
-public LC3ASMLexer() {
-    this((java.io.Reader) null);
-    init();
-  }
-%}
 
 %public
 %class LC3ASMLexer
@@ -17,10 +12,8 @@ public LC3ASMLexer() {
 %unicode
 %function advance
 %type IElementType
-
-%state IN_ARGUMENT
-%state IN_SEPERATOR
-%state IN_COMMENT
+%eof{ return;
+%eof}
 
 LineTerminator = \r|\n|\r\n
 InputCharacter = [^\r\n]
@@ -28,6 +21,10 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 Comment        = ";" {InputCharacter}* {LineTerminator}?
 CommentContent = ( [^*] | \*+ [^/*] )*
 
-%%
+%state IN_ARGUMENT
+%state IN_SEPERATOR
+%state IN_COMMENT
 
-<YYINITIAL> "JMP" {System.out.println("JMP!");}
+%%
+<YYINITIAL> {Comment} {yybegin(YYINITIAL); return LC3Types.COMMENT; }
+[^] { return TokenType.BAD_CHARACTER; }

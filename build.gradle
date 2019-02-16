@@ -13,8 +13,11 @@ version '1.0-SNAPSHOT'
 sourceCompatibility = 1.8
 
 // import is optional to make task creation easier
-import org.jetbrains.grammarkit.tasks.*
+import org.jetbrains.grammarkit.tasks.GenerateParser
+import org.jetbrains.grammarkit.tasks.GenerateLexer
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 grammarKit {
     // version of IntelliJ patched JFlex (see bintray link below), Default is 1.7.0-1 
     jflexRelease = '1.7.0-1'
@@ -28,6 +31,15 @@ task generateLc3AsmLexer(type: GenerateLexer) {
     source = "grammar/lc3asm.flex"
     targetDir = "gen/cn/codetector/lc3/lc3intellij/lang"
     targetClass = "LC3ASMLexer"
+    purgeOldFiles = true
+}
+
+task generateLc3Parser(type: GenerateParser) {
+    group = "parser"
+    source = "grammar/LC3ASM.bnf"
+    targetRoot = "gen/"
+    pathToParser = "cn/codetector/lc3/lc3intellij/lang/LC3Parser.java"
+    pathToPsiRoot = "cn/codetector/lc3/lc3intellij/psi"
     purgeOldFiles = true
 }
 
@@ -51,6 +63,13 @@ dependencies {
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
+tasks.withType(KotlinCompile) {
+    dependsOn(
+            generateLc3AsmLexer,
+            generateLc3Parser
+    )
+}
+
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
