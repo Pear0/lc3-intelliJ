@@ -1,0 +1,65 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij' version '0.4.2'
+    id 'org.jetbrains.kotlin.jvm' version '1.3.21'
+    id "org.jetbrains.grammarkit" version "2018.3"
+}
+apply plugin: 'org.jetbrains.grammarkit'
+
+
+group 'cn.codetector.lc3'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+// import is optional to make task creation easier
+import org.jetbrains.grammarkit.tasks.*
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+grammarKit {
+    // version of IntelliJ patched JFlex (see bintray link below), Default is 1.7.0-1 
+    jflexRelease = '1.7.0-1'
+
+    // tag or short commit hash of Grammar-Kit to use (see link below). Default is 2017.1.7
+    grammarKitRelease = '6452fde524'
+}
+
+task generateLc3AsmLexer(type: GenerateLexer) {
+    group = "lexer"
+    source = "grammar/lc3asm.flex"
+    targetDir = "gen/cn/codetector/lc3/lc3intellij/lang"
+    targetClass = "LC3ASMLexer"
+    purgeOldFiles = true
+}
+
+sourceSets {
+    getByName("main") {
+        java.srcDirs("src", "gen")
+        kotlin.srcDirs("src", "gen")
+        resources.srcDirs("res")
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+intellij {
+    version '2018.2.6'
+    sandboxDirectory = "$project.buildDir/myCustom-sandbox"
+}
+patchPluginXml {
+    changeNotes """
+      Add change notes here.<br>
+      <em>most HTML tags may be used</em>"""
+}
