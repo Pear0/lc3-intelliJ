@@ -28,7 +28,7 @@ grammarKit {
 
 task generateLc3AsmLexer(type: GenerateLexer) {
     group = "lexer"
-    source = "grammar/lc3asm.flex"
+    source = "grammar/LC3Lexer.flex"
     targetDir = "gen/cn/codetector/lc3/lc3intellij/lang"
     targetClass = "LC3ASMLexer"
     purgeOldFiles = true
@@ -49,6 +49,10 @@ sourceSets {
         kotlin.srcDirs("src/main/kotlin", "gen")
         resources.srcDirs("res")
     }
+}
+
+clean.doFirst {
+    delete "gen"
 }
 
 repositories {
@@ -73,6 +77,7 @@ tasks.withType(KotlinCompile) {
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
+
 intellij {
     version 'IC-2018.2'
     sandboxDirectory = "$project.buildDir/myCustom-sandbox"

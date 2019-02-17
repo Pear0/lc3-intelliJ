@@ -1,8 +1,6 @@
 package cn.codetector.lc3.lc3intellij.completion
 
 import cn.codetector.lc3.lc3intellij.LC3Language
-import cn.codetector.lc3.lc3intellij.psi.LC3ASMInstruction
-import cn.codetector.lc3.lc3intellij.psi.LC3TokenType
 import cn.codetector.lc3.lc3intellij.psi.LC3Types
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElement

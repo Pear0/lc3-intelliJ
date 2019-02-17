@@ -21,36 +21,36 @@ object LC3ASMHighlighter : SyntaxHighlighter {
     val LABEL = arrayOf(createTextAttributesKey("LC3_LABEL", DefaultLanguageHighlighterColors.LABEL))
     val DIRECTIVE = arrayOf(createTextAttributesKey("LC3_DIRECTIVE", DefaultLanguageHighlighterColors.CONSTANT))
     override fun getTokenHighlights(tokenType: IElementType?): Array<TextAttributesKey> = when (tokenType) {
-        LC3Types.ADD_OP,
-        LC3Types.AND_OP,
-        LC3Types.BR_OP,
-        LC3Types.JMP_OP,
-        LC3Types.JSR_OP,
-        LC3Types.JSRR_OP,
-        LC3Types.LD_OP,
-        LC3Types.LDI_OP,
-        LC3Types.LDR_OP,
-        LC3Types.LEA_OP,
-        LC3Types.NOT_OP,
-        LC3Types.RET_OP,
-        LC3Types.RTI_OP,
-        LC3Types.ST_OP,
-        LC3Types.STI_OP,
-        LC3Types.STR_OP,
-        LC3Types.GETC_OP,
-        LC3Types.OUT_OP,
-        LC3Types.PUTS_OP,
-        LC3Types.IN_OP,
-        LC3Types.HALT_OP -> INSTRUCTION_OP_CODE
-
-        LC3Types.COMMENT -> COMMENT
-        LC3Types.REGISTER -> REGISTER
-        LC3Types.INTEGER -> NUMBER
-        LC3Types.STRING -> STRING
-        LC3Types.LABEL -> LABEL
-
-        LC3Types.ORIG_SYM, LC3Types.FILL_SYM, LC3Types.BLKW_SYM,
-        LC3Types.STRINGZ_SYM, LC3Types.END_SYM -> DIRECTIVE
+//        LC3Types.ADD_OP,
+//        LC3Types.AND_OP,
+//        LC3Types.BR_OP,
+//        LC3Types.JMP_OP,
+//        LC3Types.JSR_OP,
+//        LC3Types.JSRR_OP,
+//        LC3Types.LD_OP,
+//        LC3Types.LDI_OP,
+//        LC3Types.LDR_OP,
+//        LC3Types.LEA_OP,
+//        LC3Types.NOT_OP,
+//        LC3Types.RET_OP,
+//        LC3Types.RTI_OP,
+//        LC3Types.ST_OP,
+//        LC3Types.STI_OP,
+//        LC3Types.STR_OP,
+//        LC3Types.GETC_OP,
+//        LC3Types.OUT_OP,
+//        LC3Types.PUTS_OP,
+//        LC3Types.IN_OP,
+//        LC3Types.HALT_OP -> INSTRUCTION_OP_CODE
+//
+//        LC3Types.COMMENT -> COMMENT
+//        LC3Types.REGISTER -> REGISTER
+//        LC3Types.INTEGER -> NUMBER
+//        LC3Types.STRING -> STRING
+//        LC3Types.LABEL -> LABEL
+//
+//        LC3Types.ORIG_SYM, LC3Types.FILL_SYM, LC3Types.BLKW_SYM,
+//        LC3Types.STRINGZ_SYM, LC3Types.END_SYM -> DIRECTIVE
         else -> emptyArray()
     }
 
