@@ -8,7 +8,7 @@ apply plugin: 'org.jetbrains.grammarkit'
 
 
 group 'cn.codetector.lc3'
-version '1.0-SNAPSHOT'
+version '1.0.1-SNAPSHOT'
 
 sourceCompatibility = 1.8
 

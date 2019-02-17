@@ -31,7 +31,7 @@ STRING_UNICODE=\\((u{HEXDIGIT}{4})|(x{HEXDIGIT}{2}))
 CHAR_LITERAL='([^\\\'\x00-\x1F\x7F]|\\[^\x00-\x1F\x7F]+)'
 STRING_ESCAPE=\\[^]
 
-STRING=\"[^\"]\"
+STRING=\"[^\"]*\"
 
 DIGIT=[\d_]
 NUM_PART=\d({DIGIT}*\d)?
