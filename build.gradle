@@ -45,8 +45,8 @@ task generateLc3Parser(type: GenerateParser) {
 
 sourceSets {
     getByName("main") {
-        java.srcDirs("src", "gen")
-        kotlin.srcDirs("src", "gen")
+        java.srcDirs("gen", "src")
+        kotlin.srcDirs("gen", "src")
         resources.srcDirs("res")
     }
 }
@@ -74,8 +74,10 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 intellij {
-    version '2018.2.6'
+    version 'IC-2018.2'
     sandboxDirectory = "$project.buildDir/myCustom-sandbox"
+    pluginName 'LC3-ASM'
+    intellij.updateSinceUntilBuild false
 }
 patchPluginXml {
     changeNotes """

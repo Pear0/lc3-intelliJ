@@ -1,6 +1,9 @@
 <idea-plugin>
-    <id>cn.codetector.lc3.lc3-CLion</id>
+    <id>cn.codetector.lc3.lc3intellij</id>
     <name>LC-3 Assembly Support For IntelliJ Platform</name>
+    <version>1.0</version>
+    <idea-version since-build="181.0"/>
+    <depends>com.intellij.modules.lang</depends>
     <vendor email="codetector@codetector.cn" url="https://blog.codetector.cn">Codetector</vendor>
 
     <description><![CDATA[
@@ -22,9 +25,5 @@
 
     <actions>
         <!-- Add your actions here -->
-        <group id="lc3-CLion.SampleMenu" text="Greeting" description="Greeting Message">
-            <add-to-group group-id="MainMenu" anchor="last"/>
-            <action class="HelloAction" id="MyPlugin.Textboxes" text="Hello" description="Say Hello"/>
-        </group>
     </actions>
 </idea-plugin>

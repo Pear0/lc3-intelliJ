@@ -14,7 +14,7 @@ object LC3ASMFileType : LanguageFileType(LC3Language.INSTANCE) {
     }
 
     override fun getDefaultExtension(): String {
-        return ".asm"
+        return "asm"
     }
 
     override fun getDescription(): String {
