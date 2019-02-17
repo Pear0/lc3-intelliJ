@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>cn.codetector.lc3.lc3intellij</id>
     <name>LC-3 Assembly Support For IntelliJ Platform</name>
-    <version>1.0</version>
+    <version>1.0.1</version>
     <idea-version since-build="181.0"/>
     <depends>com.intellij.modules.lang</depends>
     <vendor email="codetector@codetector.cn" url="https://blog.codetector.cn">Codetector</vendor>
@@ -21,6 +21,7 @@
         <fileTypeFactory implementation="cn.codetector.lc3.lc3intellij.filetype.LC3ASMFileTypeFactory"/>
         <lang.syntaxHighlighterFactory language="LC3ASM" implementationClass="cn.codetector.lc3.lc3intellij.syntax.LC3ASMHighlighterFactory"/>
         <lang.parserDefinition language="LC3ASM" implementationClass="cn.codetector.lc3.lc3intellij.LC3ParserDefinition"/>
+        <completion.contributor language="LC3ASM" implementationClass="cn.codetector.lc3.lc3intellij.completion.SimpleLC3Completion"/>
     </extensions>
 
     <actions>

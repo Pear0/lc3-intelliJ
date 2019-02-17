@@ -45,8 +45,8 @@ task generateLc3Parser(type: GenerateParser) {
 
 sourceSets {
     getByName("main") {
-        java.srcDirs("gen", "src")
-        kotlin.srcDirs("gen", "src")
+        java.srcDirs("gen", "src/main/kotlin")
+        kotlin.srcDirs("src/main/kotlin", "gen")
         resources.srcDirs("res")
     }
 }
