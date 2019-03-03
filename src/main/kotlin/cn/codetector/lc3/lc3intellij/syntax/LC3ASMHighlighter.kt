@@ -18,7 +18,8 @@ object LC3ASMHighlighter : SyntaxHighlighter {
     val COMMENT = arrayOf(createTextAttributesKey("LC3_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT))
     val NUMBER = arrayOf(createTextAttributesKey("LC3_NUMBER", DefaultLanguageHighlighterColors.NUMBER))
     val STRING = arrayOf(createTextAttributesKey("LC3_STRING", DefaultLanguageHighlighterColors.STRING))
-    val LABEL = arrayOf(createTextAttributesKey("LC3_LABEL", DefaultLanguageHighlighterColors.LABEL))
+    val NAMED_LABEL = arrayOf(createTextAttributesKey("LC3_LABEL", DefaultLanguageHighlighterColors.FUNCTION_DECLARATION))
+    val REF_LABEL = arrayOf(createTextAttributesKey("LC3_LABEL", DefaultLanguageHighlighterColors.FUNCTION_CALL))
     val DIRECTIVE = arrayOf(createTextAttributesKey("LC3_DIRECTIVE", DefaultLanguageHighlighterColors.CONSTANT))
     override fun getTokenHighlights(tokenType: IElementType?): Array<TextAttributesKey> = when (tokenType) {
         LC3Types.ADD_OP,
@@ -47,7 +48,8 @@ object LC3ASMHighlighter : SyntaxHighlighter {
         LC3Types.REGISTER -> REGISTER
         LC3Types.INTEGER -> NUMBER
         LC3Types.STRING -> STRING
-        LC3Types.LABEL -> LABEL
+        LC3Types.NAMED_LABEL -> NAMED_LABEL
+        LC3Types.REF_LABEL -> REF_LABEL
 
         LC3Types.ORIG_SYM, LC3Types.FILL_SYM, LC3Types.BLKW_SYM,
         LC3Types.STRINGZ_SYM, LC3Types.END_SYM -> DIRECTIVE

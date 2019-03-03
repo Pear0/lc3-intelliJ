@@ -15,13 +15,23 @@
     <!-- uncomment to enable plugin in all products
     <depends>com.intellij.modules.lang</depends>
     -->
+    <project-components>
+        <component>
+            <implementation-class>cn.codetector.lc3.lc3intellij.ui.LC3EditorHandler</implementation-class>
+        </component>
+    </project-components>
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
         <fileTypeFactory implementation="cn.codetector.lc3.lc3intellij.filetype.LC3ASMFileTypeFactory"/>
-        <lang.syntaxHighlighterFactory language="LC3ASM" implementationClass="cn.codetector.lc3.lc3intellij.syntax.LC3ASMHighlighterFactory"/>
-        <lang.parserDefinition language="LC3ASM" implementationClass="cn.codetector.lc3.lc3intellij.LC3ParserDefinition"/>
-        <completion.contributor language="LC3ASM" implementationClass="cn.codetector.lc3.lc3intellij.completion.SimpleLC3Completion"/>
+        <lang.syntaxHighlighterFactory language="LC3ASM"
+                                       implementationClass="cn.codetector.lc3.lc3intellij.syntax.LC3ASMHighlighterFactory"/>
+        <lang.parserDefinition language="LC3ASM"
+                               implementationClass="cn.codetector.lc3.lc3intellij.LC3ParserDefinition"/>
+        <completion.contributor language="LC3ASM"
+                                implementationClass="cn.codetector.lc3.lc3intellij.completion.SimpleLC3Completion"/>
+        <annotator language="LC3ASM" implementationClass="cn.codetector.lc3.lc3intellij.LC3Annotator"/>
+        <documentationProvider implementation="cn.codetector.lc3.lc3intellij.LC3DocumentationProvider"/>
     </extensions>
 
     <actions>

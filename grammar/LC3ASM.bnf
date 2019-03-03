@@ -1,11 +1,16 @@
 {
 parserClass="cn.codetector.lc3.lc3intellij.parser.LC3Parser"
-extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+extends="cn.codetector.lc3.lc3intellij.psi.LC3PsiElement"
 
 psiClassPrefix="LC3ASM"
 psiImplClassSuffix="Impl"
 psiPackage="cn.codetector.lc3.lc3intellij.psi"
 psiImplPackage="cn.codetector.lc3.lc3intellij.psi.impl"
+
+extends("NAMED_LABEL") = "cn.codetector.lc3.lc3intellij.psi.PsiLabel"
+extends("REF_LABEL") = "cn.codetector.lc3.lc3intellij.psi.PsiLabelReference"
+extends("instruction") = "cn.codetector.lc3.lc3intellij.psi.LC3PsiInstruction"
+extends("VALUE") = "cn.codetector.lc3.lc3intellij.psi.LC3PsiValue"
 
 elementTypeHolderClass="cn.codetector.lc3.lc3intellij.psi.LC3Types"
 elementTypeClass="cn.codetector.lc3.lc3intellij.psi.LC3ElementType"
@@ -13,8 +18,11 @@ tokenTypeClass="cn.codetector.lc3.lc3intellij.psi.LC3TokenType"
 }
 
 lc3File ::= item_*
-private item_ ::= ((label) | (label? (instruction | directive))? COMMENT? CRLF)
-data ::= INTEGER | STRING
+private item_ ::= ((NAMED_LABEL) | (NAMED_LABEL? (instruction | directive))? COMMENT? CRLF)
+NAMED_LABEL ::= label
+REF_LABEL ::= label
+VALUE ::= INTEGER | STRING
+immediate ::= VALUE | REF_LABEL
 directive ::= DIRECTIVE_MARKER (ORIG_DIR | FILL_DIR | BLKW_DIR | STRINGZ_DIR | END_DIR)
 ORIG_DIR ::= ORIG_SYM INTEGER
 FILL_DIR ::= FILL_SYM INTEGER
@@ -33,22 +41,22 @@ ORRR_INSTRUCTION ::= AND_INST | ADD_INST
 ORRI_INSTRUCTION ::= AND_INST | ADD_INST | LDR_INST | STR_INST
 
 
-ADD_INST ::= (ADD_OP REGISTER ARG_ARG_SEPARATOR REGISTER ARG_ARG_SEPARATOR (REGISTER | INTEGER))
-AND_INST ::= (AND_OP REGISTER ARG_ARG_SEPARATOR REGISTER ARG_ARG_SEPARATOR (REGISTER | INTEGER))
-BR_INST ::= (BR_OP label)
+ADD_INST ::= (ADD_OP REGISTER ARG_ARG_SEPARATOR REGISTER ARG_ARG_SEPARATOR (REGISTER | immediate))
+AND_INST ::= (AND_OP REGISTER ARG_ARG_SEPARATOR REGISTER ARG_ARG_SEPARATOR (REGISTER | immediate))
+BR_INST ::= (BR_OP immediate)
 JMP_INST ::= (JMP_OP REGISTER)
-JSR_INST ::= (JSR_OP label)
+JSR_INST ::= (JSR_OP immediate)
 JSRR_INST ::= (JSRR_OP REGISTER)
-LD_INST ::= (LD_OP REGISTER ARG_ARG_SEPARATOR label)
-LDI_INST ::= (LDI_OP REGISTER ARG_ARG_SEPARATOR label)
-LDR_INST ::= (LDR_OP REGISTER ARG_ARG_SEPARATOR REGISTER ARG_ARG_SEPARATOR INTEGER)
-LEA_INST ::= LEA_OP REGISTER ARG_ARG_SEPARATOR label
+LD_INST ::= (LD_OP REGISTER ARG_ARG_SEPARATOR immediate)
+LDI_INST ::= (LDI_OP REGISTER ARG_ARG_SEPARATOR immediate)
+LDR_INST ::= (LDR_OP REGISTER ARG_ARG_SEPARATOR REGISTER ARG_ARG_SEPARATOR immediate)
+LEA_INST ::= LEA_OP REGISTER ARG_ARG_SEPARATOR immediate
 NOT_INST ::= NOT_OP REGISTER ARG_ARG_SEPARATOR REGISTER
 RET_INST ::= RET_OP
 RTI_INST ::= RTI_OP
-ST_INST ::= ST_OP REGISTER ARG_ARG_SEPARATOR label
-STI_INST ::= STI_OP REGISTER ARG_ARG_SEPARATOR label
-STR_INST ::= STR_OP REGISTER ARG_ARG_SEPARATOR REGISTER ARG_ARG_SEPARATOR INTEGER
+ST_INST ::= ST_OP REGISTER ARG_ARG_SEPARATOR immediate
+STI_INST ::= STI_OP REGISTER ARG_ARG_SEPARATOR immediate
+STR_INST ::= STR_OP REGISTER ARG_ARG_SEPARATOR REGISTER ARG_ARG_SEPARATOR immediate
 GETC_INST ::= GETC_OP
 OUT_INST ::= OUT_OP
 PUTS_INST ::= PUTS_OP

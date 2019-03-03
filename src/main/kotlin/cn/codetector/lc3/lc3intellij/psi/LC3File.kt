@@ -11,6 +11,8 @@ class LC3File(viewProvider: FileViewProvider): PsiFileBase(viewProvider, LC3Lang
         return LC3ASMFileType
     }
 
+
+
     override fun toString(): String {
         return "LC3 Assembly File"
     }
