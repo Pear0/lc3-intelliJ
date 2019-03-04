@@ -12,7 +12,7 @@ enum class Immediate(val range: IntRange) {
 
 
 sealed class Instruction {
-// https://justinmeiners.github.io/lc3-vm/supplies/lc3-isa.pdf
+    // https://justinmeiners.github.io/lc3-vm/supplies/lc3-isa.pdf
 
     object ADD : Instruction() {
         override val immediate: Immediate? = Immediate.IMM5
@@ -74,3 +74,10 @@ sealed class Instruction {
 
     open val immediate: Immediate? = null
 }
+
+data class FullInstruction(
+    val instruction: Instruction,
+    val arg0: VirtualLC3.InstArg? = null,
+    val arg1: VirtualLC3.InstArg? = null,
+    val arg2: VirtualLC3.InstArg? = null
+)
