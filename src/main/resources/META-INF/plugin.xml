@@ -1,13 +1,43 @@
 <idea-plugin>
     <id>cn.codetector.lc3.lc3intellij</id>
     <name>LC-3 Assembly Support For IntelliJ Platform</name>
-    <version>1.0.1</version>
+    <version>1.1.1</version>
     <idea-version since-build="181.0"/>
     <depends>com.intellij.modules.lang</depends>
-    <vendor email="codetector@codetector.cn" url="https://blog.codetector.cn">Codetector</vendor>
+    <vendor email="will@willgulian.com" url="https://github.com/Pear0">Will Gulian</vendor>
 
     <description><![CDATA[
-    <p>Language support for LC-3 Assembly. Mainly targeting Georgia Tech CS-2110</p>
+    <h2>Language support for LC-3 Assembly.</p>
+    <ul>
+        <li>Syntax Highlighting</li>
+        <li>Code Completion on labels</li>
+        <li>Track memory addresses in the sidebar</li>
+        <li>Navigate labels to their declarations</li>
+        <li>Verify instruction immediates are in range</li>
+        <li><b>Symbolic Execution</b> of assembly to track stack and frame pointers and verify functions
+        correctly implement the standard calling convention.</li>
+    </ul>
+
+    <h2>How do I use the symbolic execution checker?</h2>
+
+    Place a comment after your label like so:
+<pre>
+FOO ; pragma function prologue
+    ADD R6, R6, -4
+    ...
+    RET
+</pre>
+
+    <p>After adding the pragma comment, whenever the cursor is in the function, the sidebar will
+    show the current stack and the registers to the best of the symbolic execution engine's knowledge.</p>
+
+    <p>Any calling convention issues will be listed as warnings on the <pre>RET</pre> instruction.</p>
+
+    <h2>Notes</h2>
+
+    <p>Mainly targeting Georgia Tech CS-2110</p>
+    <p>The idea and original version of this plugin were made by <a href="https://blog.codetector.cn">Codetector</a>.
+
     ]]></description>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
