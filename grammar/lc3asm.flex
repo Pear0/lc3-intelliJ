@@ -66,7 +66,7 @@ REGISTER=[Rr][0-7]
 
 <YYINITIAL> "add" {yybegin(IN_INSTRUCTION); return LC3Types.ADD_OP;}
 <YYINITIAL> "and" {yybegin(IN_INSTRUCTION); return LC3Types.AND_OP;}
-<YYINITIAL> "br"[nzp]?[zp]?[p]? {yybegin(IN_INSTRUCTION); return LC3Types.BR_OP;}
+<YYINITIAL> "br"[nzpNZP]?[zpZP]?[pP]? {yybegin(IN_INSTRUCTION); return LC3Types.BR_OP;}
 <YYINITIAL> "jmp" {yybegin(IN_INSTRUCTION); return LC3Types.JMP_OP;}
 <YYINITIAL> "jsr" {yybegin(IN_INSTRUCTION); return LC3Types.JSR_OP;}
 <YYINITIAL> "jsrr" {yybegin(IN_INSTRUCTION); return LC3Types.JSRR_OP;}

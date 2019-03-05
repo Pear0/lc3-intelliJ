@@ -11,7 +11,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.parentOfType
 import java.util.*
-import java.util.prefs.BackingStoreException
 import kotlin.collections.HashMap
 
 class LC3Annotator : Annotator {
@@ -20,8 +19,6 @@ class LC3Annotator : Annotator {
         if (element is PsiFile) {
             parseFile(element, holder)
         }
-
-        // holder.createInfoAnnotation(element, element.toString())
 
         if (element is PsiLabelReference) {
             if (element.resolve() == null) {
@@ -45,10 +42,8 @@ class LC3Annotator : Annotator {
             if (LC3Pragma.isPragma(element)) {
                 val pragma = LC3Pragma.getPragma(element)
 
-                if (pragma == "function prologue") {
-                    holder.createWarningAnnotation(element, "I'm a pragma! = $pragma")
-
-                    simulateExecution(element, holder)
+                if (pragma == LC3Plugin.PRAGMA_FUNCTION_ANALYSIS) {
+                    holder.createWarningAnnotation(element, "function pragma registered")
 
                 } else {
                     holder.createErrorAnnotation(element, "Invalid pragma: $pragma")
@@ -58,7 +53,20 @@ class LC3Annotator : Annotator {
 
     }
 
-    data class ForwardEdge(val from: Int, val target: Int, var block: BasicBlock? = null)
+    data class ForwardEdge(val from: Int, val target: Int, var block: BasicBlock? = null) {
+
+        override fun equals(other: Any?): Boolean {
+            return other is ForwardEdge && from == other.from && target == other.target
+        }
+
+        override fun hashCode(): Int {
+            return 31 * from + 1051 * target
+        }
+
+        override fun toString(): String {
+            return "ForwardEdge(from=$from, target=$target, block=${block?.start?.toString(16).let { "x$it" }}"
+        }
+    }
 
     data class BasicBlock(
         val start: Int,
@@ -66,6 +74,8 @@ class LC3Annotator : Annotator {
         val edges: List<ForwardEdge>,
         val invalid: Boolean = false
     )
+
+    data class FuncStart(val label: String)
 
     private fun parseFile(file: PsiFile, holder: AnnotationHolder) {
         println("Re-evaluating psi file at ${System.currentTimeMillis()}")
@@ -175,7 +185,9 @@ class LC3Annotator : Annotator {
         val flowedInstructions = HashSet<Int>()
 
         for (block in blocks) {
-            println(block)
+            if (LC3Plugin.DEBUG) {
+                println(block)
+            }
 
             for (edge in block.edges) {
                 edge.block = blockAddressMap[edge.target]
@@ -185,14 +197,14 @@ class LC3Annotator : Annotator {
             }
 
             block.lines.firstOrNull()?.let { line ->
-                if (line.pragma == "function prologue") {
+                if (line.pragma == LC3Plugin.PRAGMA_FUNCTION_ANALYSIS) {
                     functionStartBlocks.add(block)
                 }
             }
 
             for (line in block.lines) {
                 flowedInstructions.add(line.address)
-                if (line.psi != null) {
+                if (LC3Plugin.DEBUG && line.psi != null) {
                     holder.createInfoAnnotation(line.psi, "Block x${block.start.toString(16)}")
                 }
             }
@@ -206,94 +218,103 @@ class LC3Annotator : Annotator {
             }
         }
 
-        val stateMap = HashMap<SimpleLC3Tracer.LineInfo, VirtualLC3>()
+        val memoryLookup = object : VirtualLC3.Memory {
+            override fun getValue(address: Int): VirtualLC3.InternalValue? {
+                return instLookup[address]?.data?.let { VirtualLC3.InternalValue(it, false) }
+            }
+        }
+
+        val stateMap = HashMap<SimpleLC3Tracer.LineInfo, Pair<FuncStart, VirtualLC3>>()
 
         for (funcStart in functionStartBlocks) {
             val blockStartState = HashMap<BasicBlock, VirtualLC3>()
             blockStartState[funcStart] = VirtualLC3().apply { prepareFunction() }
+
+            val funcStartDesc = FuncStart(funcStart.lines[0].label ?: "unknown")
 
             val functionBlocks = ArrayDeque<BasicBlock>()
             functionBlocks.add(funcStart)
 
             while (functionBlocks.isNotEmpty()) {
                 val block = functionBlocks.poll() ?: break
-                println("Processing block $block")
+                if (LC3Plugin.DEBUG) {
+                    println("Processing block $block")
+                }
                 val lc3 = blockStartState[block]!!.copy()
 
-                val edgeMap = HashMap<Int, ForwardEdge>()
+                val edgeMap = HashMap<Int, ArrayList<ForwardEdge>>()
                 for (edge in block.edges) {
-                    edgeMap[edge.from] = edge
+                    if (edge.from in edgeMap) {
+                        edgeMap[edge.from]!!.add(edge)
+                    } else {
+                        edgeMap[edge.from] = ArrayList<ForwardEdge>().apply { add(edge) }
+                    }
                 }
 
-                val skipInstructions = listOf<Instruction>(Instruction.BR, Instruction.RET, Instruction.RTI)
+                val skipInstructions =
+                    listOf<Instruction>(Instruction.BR, Instruction.RET, Instruction.RTI, Instruction.JMP)
 
                 for (line in block.lines) {
                     if (line.instruction!!.instruction == Instruction.RET) {
-                        println("At the end of the function, the LC3 be like:")
-                        lc3.dump()
+                        if (LC3Plugin.DEBUG) {
+                            println("At the end of the function, the LC3 be like:")
+                            lc3.dump()
+                        }
+                        if (line.psi != null) {
+                            val issues = lc3.verifyFunctionEpilogue()
+                            for (issue in issues) {
+                                holder.createWarningAnnotation(line.psi, issue)
+                            }
+                        }
                     }
 
-                    if (line.instruction.instruction !in skipInstructions && !lc3.execute(line.instruction)) {
+                    lc3.setPC(line.address)
+                    if (line.instruction.instruction !in skipInstructions && !lc3.execute(
+                            memoryLookup,
+                            line.instruction
+                        )
+                    ) {
                         println("Failed at execution of ${line.instruction}")
                         lc3.dump()
                         return
                     }
-                    if (line.psi != null) {
+                    if (LC3Plugin.DEBUG && line.psi != null) {
                         holder.createInfoAnnotation(line.psi, lc3.dumpString())
                     }
 
-                    stateMap[line] = lc3.copy()
+                    stateMap[line] = funcStartDesc to lc3.copy()
 
-                    edgeMap[line.address]?.let { edge ->
-                        val targetBlock = edge.block
-                        if (targetBlock != null) {
-                            val existingLc3 = blockStartState[targetBlock]
+                    edgeMap[line.address]?.let { edges ->
+                        for (edge in edges) {
+                            val targetBlock = edge.block
+                            if (targetBlock != null) {
+                                val existingLc3 = blockStartState[targetBlock]
 
-                            if (existingLc3 == null) {
-                                blockStartState[targetBlock] = lc3
-                                functionBlocks.add(targetBlock)
-                            } else {
-                                val merged = existingLc3.merge(lc3)
-                                blockStartState[targetBlock] = merged
-
-                                if (merged != existingLc3) {
+                                if (existingLc3 == null) {
+                                    blockStartState[targetBlock] = lc3
                                     functionBlocks.add(targetBlock)
+                                } else {
+                                    val merged = existingLc3.merge(lc3)
+                                    blockStartState[targetBlock] = merged
+
+                                    if (merged != existingLc3) {
+                                        functionBlocks.add(targetBlock)
+                                    }
                                 }
                             }
                         }
                     }
                 }
 
-                println("Finished block $block")
+                if (LC3Plugin.DEBUG) {
+                    println("Finished block $block")
+                }
             }
         }
 
         LC3EditorHandler.instance.forFile(file.virtualFile!!) {
             updateStateMap(stateMap)
         }
-
-    }
-
-    private fun simulateExecution(startElement: PsiElement, holder: AnnotationHolder) {
-        println("\n".repeat(10))
-
-//        val lc3 = VirtualLC3()
-//        lc3.prepareFunction()
-//
-//        var elem: PsiElement? = startElement
-//        var keepGoing = true
-//        while (keepGoing && elem != null) {
-//            if (elem is LC3PsiInstruction) {
-//                val inst = SimpleLC3Tracer.processInstruction(elem)
-//                keepGoing = inst != null && lc3.execute(inst)
-//            }
-//            elem = elem.nextSibling
-//        }
-//
-//        val vf = startElement.containingFile.virtualFile
-//        LC3EditorHandler.instance.forFile(vf) {
-//            displayFunctionPrologue(lc3)
-//        }
 
     }
 

@@ -6,9 +6,16 @@ import java.lang.IllegalArgumentException
 class VirtualLC3 {
     companion object {
         val SAVED_PC = InternalValue(0, true, "SAVED_PC")
-        val INITIAL_BP = InternalValue(0, true, "INITIAL_BP")
-        val INITIAL_SP = InternalValue(0x100, false, "INITIAL_SP")
+        val INITIAL_BP = InternalValue(0, true, "I_FP")
+        val INITIAL_SP = InternalValue(0x1000, false, "I_SP")
         val MERGE_CONFLICT = InternalValue(0, true, "???")
+        val UNKNOWN = InternalValue(0, true, "???")
+
+        val DEFAULT_MEMORY = object : Memory {
+            override fun getValue(address: Int) = UNKNOWN
+        }
+
+        private fun prototypeRegs() = Array(9) { InternalValue(0, true, if (it == 8) "PC" else "I_R$it") }
     }
 
     data class InternalValue(val value: Int, val magic: Boolean = false, val name: String = "")
@@ -36,16 +43,31 @@ class VirtualLC3 {
 
     }
 
-    val registers = Array(9) { InternalValue(0, true, if (it == 8) "PC" else "R$it") }
-    val stack = arrayOfNulls<InternalValue>(0x200)
+    interface Memory {
+        fun getValue(address: Int): InternalValue?
+    }
+
+    fun Memory.resolveValue(address: Int) = getValue(address) ?: UNKNOWN
+
+    val registers = prototypeRegs()
+    val stack = arrayOfNulls<InternalValue>(0x2000)
 
     init {
         clear()
     }
 
+    fun setPC(address: Int?) {
+        if (address != null) {
+            registers[Register.PC.ordinal] = InternalValue(address, false)
+        } else {
+            registers[Register.PC.ordinal] = InternalValue(0, true, "PC")
+        }
+    }
+
     fun clear() {
+        val pristineRegs = prototypeRegs()
         for (i in registers.indices) {
-            registers[i] = InternalValue(0, true, if (i == 8) "PC" else "R$i")
+            registers[i] = pristineRegs[i]
         }
 
         for (i in stack.indices) {
@@ -81,8 +103,8 @@ class VirtualLC3 {
         clear()
 
         registers[7] = SAVED_PC
-        registers[6] = INITIAL_BP
-        registers[5] = INITIAL_SP
+        registers[6] = INITIAL_SP
+        registers[5] = INITIAL_BP
     }
 
     private fun wrap16(num: Int): Int {
@@ -98,7 +120,7 @@ class VirtualLC3 {
         return wrapped
     }
 
-    fun execute(instruction: Instruction, arg0: InstArg?, arg1: InstArg?, arg2: InstArg?): Boolean {
+    fun execute(mem: Memory, instruction: Instruction, arg0: InstArg?, arg1: InstArg?, arg2: InstArg?): Boolean {
         return when (instruction) {
             Instruction.ADD -> {
                 assert(arg0 is Register)
@@ -154,17 +176,65 @@ class VirtualLC3 {
                 registers[(arg0 as Register).ordinal] = newValue
                 true
             }
-            Instruction.BR -> false
-            Instruction.JMP -> false
-            Instruction.JSR -> false
-            Instruction.JSRR -> false
-            Instruction.LD -> false // TODO
+            Instruction.BR -> false // handled externally
+            Instruction.JMP -> false  // handled externally
+            Instruction.JSR -> {
+
+                registers[6] = if (registers[6].magic) registers[6] else InternalValue(registers[6].value - 1, false)
+
+                true
+            }
+            Instruction.JSRR -> {
+
+                registers[6] = if (registers[6].magic) registers[6] else InternalValue(registers[6].value - 1, false)
+
+                true
+            }
+            Instruction.LD -> {
+                arg0 as Register
+                arg1 as Value
+
+                val pc = registers[Register.PC.ordinal]
+                if (pc.magic) {
+                    registers[arg0.ordinal] = UNKNOWN
+                } else {
+                    val address = pc.value + 1 + arg1.value
+                    registers[arg0.ordinal] = mem.resolveValue(address)
+                }
+
+                true
+            }
             Instruction.LDI -> false // TODO
-            Instruction.LDR -> false // TODO
+            Instruction.LDR -> {
+                arg0 as Register
+                arg1 as Register
+                arg2 as Value
+
+                if (registers[arg1.ordinal].magic) {
+                    false
+                } else {
+                    val index = registers[arg1.ordinal].value + arg2.value
+                    registers[arg0.ordinal] = stack[index] ?: UNKNOWN
+                    true
+                }
+            }
             Instruction.LEA -> false // TODO
-            Instruction.NOT -> false // TODO
-            Instruction.RET -> false // TODO
-            Instruction.RTI -> false
+            Instruction.NOT -> {
+                arg0 as Register
+                arg1 as Register
+
+                if (registers[arg1.ordinal].magic) {
+                    registers[arg0.ordinal] = registers[arg1.ordinal]
+                } else {
+                    val newValue = registers[arg1.ordinal].value.inv()
+
+                    registers[arg0.ordinal] = InternalValue(newValue, false)
+                }
+
+                true
+            }
+            Instruction.RET -> false  // handled externally
+            Instruction.RTI -> false  // handled externally
             Instruction.ST -> false // TODO
             Instruction.STI -> false // TODO
             Instruction.STR -> {
@@ -180,12 +250,12 @@ class VirtualLC3 {
                     true
                 }
             }
-            Instruction.TRAP -> false
+            Instruction.TRAP -> false  // handled externally
         }
     }
 
-    fun execute(inst: FullInstruction): Boolean {
-        return execute(inst.instruction, inst.arg0, inst.arg1, inst.arg2)
+    fun execute(mem: Memory?, inst: FullInstruction): Boolean {
+        return execute(mem ?: DEFAULT_MEMORY, inst.instruction, inst.arg0, inst.arg1, inst.arg2)
     }
 
     fun dumpString(): String {
@@ -220,6 +290,27 @@ class VirtualLC3 {
             val entry = stack[i] ?: continue
             println("    ${i.toString(16).padStart(4, '0')}: $entry")
         }
+    }
+
+    fun verifyFunctionEpilogue(): List<String> {
+        val pristineRegs = prototypeRegs()
+        pristineRegs[7] = SAVED_PC
+        pristineRegs[6] = INITIAL_SP
+        pristineRegs[5] = INITIAL_BP
+
+        val errors = ArrayList<String>()
+
+        for (i in arrayOf(0, 1, 2, 3, 4, 5, 7)) {
+            if (registers[i] != pristineRegs[i]) {
+                errors.add("${pristineRegs[i].name} not preserved")
+            }
+        }
+
+        if (registers[6].magic || registers[6].value != INITIAL_SP.value - 1) {
+            errors.add("SP should be one less than INITIAL_SP")
+        }
+
+        return errors
     }
 
     private fun areEqual(a: Array<out InternalValue?>, b: Array<out InternalValue?>): Boolean {
