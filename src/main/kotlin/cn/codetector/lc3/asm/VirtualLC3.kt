@@ -1,7 +1,5 @@
 package cn.codetector.lc3.asm
 
-import org.fest.swing.util.Arrays
-import java.lang.IllegalArgumentException
 
 class VirtualLC3 {
     companion object {
@@ -204,7 +202,26 @@ class VirtualLC3 {
 
                 true
             }
-            Instruction.LDI -> false // TODO
+            Instruction.LDI -> {
+                arg0 as Register
+                arg1 as Value
+
+                val pc = registers[Register.PC.ordinal]
+                if (pc.magic) {
+                    registers[arg0.ordinal] = UNKNOWN
+                } else {
+                    val address = pc.value + 1 + arg1.value
+
+                    val indirectAddress = mem.resolveValue(address)
+                    if (indirectAddress.magic) {
+                        registers[arg0.ordinal] = UNKNOWN
+                    } else {
+                        registers[arg0.ordinal] = mem.resolveValue(indirectAddress.value)
+                    }
+                }
+
+                true
+            }
             Instruction.LDR -> {
                 arg0 as Register
                 arg1 as Register
@@ -218,7 +235,20 @@ class VirtualLC3 {
                     true
                 }
             }
-            Instruction.LEA -> false // TODO
+            Instruction.LEA -> {
+                arg0 as Register
+                arg1 as Value
+
+                val pc = registers[Register.PC.ordinal]
+                if (pc.magic) {
+                    registers[arg0.ordinal] = UNKNOWN
+                } else {
+                    val address = pc.value + 1 + arg1.value
+                    registers[arg0.ordinal] = InternalValue(address, false)
+                }
+
+                true
+            }
             Instruction.NOT -> {
                 arg0 as Register
                 arg1 as Register
@@ -235,8 +265,8 @@ class VirtualLC3 {
             }
             Instruction.RET -> false  // handled externally
             Instruction.RTI -> false  // handled externally
-            Instruction.ST -> false // TODO
-            Instruction.STI -> false // TODO
+            Instruction.ST -> true // TODO
+            Instruction.STI -> true // TODO
             Instruction.STR -> {
                 arg0 as Register
                 arg1 as Register

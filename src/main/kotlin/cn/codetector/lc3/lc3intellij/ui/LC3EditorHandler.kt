@@ -7,33 +7,30 @@ import cn.codetector.lc3.lc3intellij.filetype.LC3ASMFileType
 import cn.codetector.lc3.lc3intellij.psi.SimpleLC3Tracer
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.AbstractProjectComponent
-import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.editor.event.CaretEvent
 import com.intellij.openapi.editor.event.CaretListener
-import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.editor.event.EditorFactoryEvent
 import com.intellij.openapi.editor.event.EditorFactoryListener
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.ui.SeparatorComponent
-import com.intellij.ui.SeparatorOrientation
 import com.intellij.ui.table.JBTable
 import java.awt.BorderLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
 import java.util.*
-import javax.swing.*
-import javax.swing.table.*
-import kotlin.collections.HashMap
-import javax.swing.text.StyleConstants
+import javax.swing.JPanel
+import javax.swing.JTextPane
+import javax.swing.table.AbstractTableModel
 import javax.swing.text.SimpleAttributeSet
-import javax.swing.text.StyledDocument
+import javax.swing.text.StyleConstants
+import kotlin.collections.HashMap
 
 
 class EditorSidebar(val editor: Editor) : CaretListener {

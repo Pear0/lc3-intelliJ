@@ -26,6 +26,12 @@ class LC3Annotator : Annotator {
             }
         }
 
+        if (element is PsiLabel || element is PsiLabelReference) {
+            if (element.text.toUpperCase() == "NOP") {
+                holder.createWarningAnnotation(element, "NOP is currently not handled properly. BR 0 is equivalent and supported.")
+            }
+        }
+
         if (element is LC3PsiImmediate) {
             val value = element.getIntegerValue()
             if (value != null) {
