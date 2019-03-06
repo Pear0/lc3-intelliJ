@@ -17,7 +17,7 @@ This plugin is still in development. The latest version can be found in [GitHub 
 
 ### Stack / Register Tracing (see below)
 
-![Tracing Video](images/tracing.mp4)
+![Tracing Video](images/tracing.gif)
 
 ### Syntax Highlighting
 
