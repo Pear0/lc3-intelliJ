@@ -228,7 +228,8 @@ class VirtualLC3 {
                 arg2 as Value
 
                 if (registers[arg1.ordinal].magic) {
-                    false
+                    registers[arg0.ordinal] = UNKNOWN
+                    true
                 } else {
                     val index = registers[arg1.ordinal].value + arg2.value
                     registers[arg0.ordinal] = stack[index] ?: UNKNOWN
